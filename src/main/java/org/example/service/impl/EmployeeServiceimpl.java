@@ -8,9 +8,10 @@ import org.example.repository.EmployeeRepository;
 import org.example.service.EmployeeService;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceimpl implements EmployeeService {
@@ -47,5 +48,15 @@ public class EmployeeServiceimpl implements EmployeeService {
         if(repository.findById(emp.getId()).isPresent()){
             repository.save(mapper.convertValue(emp,EmployeeEntity.class));
         }
+    }
+
+    @Override
+    public Employee findById(Long id) {
+
+        if(repository.findById(id).isPresent()){
+            Optional<EmployeeEntity> byId = repository.findById(id);
+           return mapper.convertValue(byId.get(),Employee.class);
+        }
+        return new Employee();
     }
 }
