@@ -39,5 +39,10 @@ public class EmployeeController {
         return "successfully deleted";
     }
 
+    @PutMapping("/update-emp")
+    @ResponseStatus(HttpStatus.RESET_CONTENT)
+    public void updateEmployee(@RequestBody Employee emp){
+        service.updateEmployee(emp);
+    }
 
 }
