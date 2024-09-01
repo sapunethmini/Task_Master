@@ -52,4 +52,10 @@ public class EmployeeController {
 
     }
 
+    @GetMapping("/find-by-name/{firstname}")
+    public Employee findByfirstname(@PathVariable String firstname){
+         return service.findByfirstname(firstname);
+
+    }
+
 }

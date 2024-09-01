@@ -59,4 +59,13 @@ public class EmployeeServiceimpl implements EmployeeService {
         }
         return new Employee();
     }
+
+    @Override
+    public Employee findByfirstname(String firstname) {
+        Employee employee = mapper.convertValue(repository.findByfirstname(firstname), Employee.class);
+        return employee;
+    }
+
+
+
 }
