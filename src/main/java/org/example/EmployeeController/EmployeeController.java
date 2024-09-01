@@ -5,6 +5,7 @@ import org.example.dto.Employee;
 import org.example.entity.EmployeeEntity;
 import org.example.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class EmployeeController {
 
 
     @PostMapping("/add-employee")
+    @ResponseStatus(HttpStatus.CREATED)
     public void addEmployeeDetails(@RequestBody Employee employee){
         service.addEmployee(employee);
     }
@@ -28,6 +30,13 @@ public class EmployeeController {
     @GetMapping("/get-all")
     public List<Employee> getAll(){
         return service.getAll();
+    }
+
+    @DeleteMapping("delete-emp/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public String deleteEmployee(@PathVariable Long id){
+        service.deleteEmployeeById(id);
+        return "successfully deleted";
     }
 
 
