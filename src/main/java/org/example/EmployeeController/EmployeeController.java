@@ -26,7 +26,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/get-all")
-    public List<EmployeeEntity> getAll(){
+    public List<Employee> getAll(){
         return service.getAll();
     }
 

@@ -8,6 +8,7 @@ import org.example.repository.EmployeeRepository;
 import org.example.service.EmployeeService;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -24,9 +25,13 @@ public class EmployeeServiceimpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeEntity> getAll() {
+    public List<Employee> getAll() {
+        ArrayList<Employee> employeeList = new ArrayList<>();
 
-
-        return repository.findAll();
+        List<EmployeeEntity> allEntitylist = repository.findAll();
+        allEntitylist.forEach(entity->{
+            employeeList.add(mapper.convertValue(entity,Employee.class));
+        });
+        return employeeList;
     }
 }
