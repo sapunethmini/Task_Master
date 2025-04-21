@@ -6,5 +6,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: true
+  main:
+    allow-circular-references: true  # Allow circular references as a fallback option
 
+jwt:
+  secret: yourStrongSecretKey123456789012345678901234567890
+  expiration: 36000000  # 10 hours in milliseconds
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.example: DEBUG
