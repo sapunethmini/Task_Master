@@ -1,0 +1,155 @@
+
+<div class="profile-container">
+  <!-- User Profile Card -->
+  <div class="profile-card">
+    <div class="profile-header">
+      <img [src]="user.avatar" alt="Profile Picture" class="profile-avatar">
+      <div class="profile-info">
+        <h1>{{user.name}}</h1>
+        <p class="role">{{user.role}}</p>
+        <p class="department">{{user.department}}</p>
+      </div>
+    </div>
+    <div class="profile-details">
+      <div class="detail-item">
+        <i class="pi pi-envelope"></i>
+        <span>{{user.email}}</span>
+      </div>
+      <div class="detail-item">
+        <i class="pi pi-phone"></i>
+        <span>{{user.phone}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Overview Card -->
+  <div class="task-overview-card">
+    <div class="task-header">
+      <h2>Task Overview</h2>
+      <button pButton label="Add New Task" icon="pi pi-plus" (click)="showAddTaskDialog = true"></button>
+    </div>
+    <div class="task-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{tasks.length}}</span>
+        <span class="stat-label">Total Tasks</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{completedTasks.length}}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{pendingTasks.length}}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </div>
+    <div class="progress-section">
+      <span class="progress-label">Overall Progress</span>
+      <p-progressBar [value]="completionPercentage"></p-progressBar>
+    </div>
+  </div>
+
+  <!-- Task Lists -->
+  <div class="task-lists">
+    <!-- Pending Tasks -->
+    <div class="task-list">
+      <h3>Pending Tasks</h3>
+      <div class="task-cards">
+        <div *ngFor="let task of pendingTasks" class="task-card">
+          <div class="task-card-header">
+            <h4>{{task.title}}</h4>
+            <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+              {{task.priority}}
+            </span>
+          </div>
+          <p class="task-description">{{task.description}}</p>
+          <div class="task-details">
+            <div class="task-time">
+              <i class="pi pi-clock"></i>
+              <span>{{formatTime(task.dueTime)}}</span>
+            </div>
+            <div class="task-hours">
+              <i class="pi pi-hourglass"></i>
+              <span>{{task.estimatedHours}} hours</span>
+            </div>
+          </div>
+          <div class="task-footer">
+            <span class="due-date">
+              <i class="pi pi-calendar"></i>
+              {{task.dueDate | date:'mediumDate'}}
+            </span>
+            <span class="status-badge" [style.background-color]="getStatusColor(task.status)">
+              {{task.status}}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed Tasks -->
+    <div class="task-list">
+      <h3>Completed Tasks</h3>
+      <div class="task-cards">
+        <div *ngFor="let task of completedTasks" class="task-card completed">
+          <div class="task-card-header">
+            <h4>{{task.title}}</h4>
+            <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+              {{task.priority}}
+            </span>
+          </div>
+          <p class="task-description">{{task.description}}</p>
+          <div class="task-footer">
+            <span class="due-date">
+              <i class="pi pi-calendar"></i>
+              {{task.dueDate | date:'mediumDate'}}
+            </span>
+            <span class="status-badge" [style.background-color]="getStatusColor(task.status)">
+              {{task.status}}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Task Dialog -->
+<p-dialog header="Add New Task" [(visible)]="showAddTaskDialog" [style]="{width: '450px'}" [modal]="true">
+  <div class="dialog-content">
+    <div class="field">
+      <label for="title">Task Title</label>
+      <input id="title" type="text" pInputText [(ngModel)]="newTask.title" placeholder="Enter task title">
+    </div>
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" pInputTextarea [(ngModel)]="newTask.description" rows="3" placeholder="Enter task description"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="dueDate">Due Date</label>
+        <p-calendar id="dueDate" [(ngModel)]="newTask.dueDate" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+      </div>
+      <div class="field">
+        <label for="dueTime">Due Time</label>
+        <select id="dueTime" [(ngModel)]="newTask.dueTime" class="p-inputtext">
+          <option *ngFor="let time of timeOptions" [value]="time">{{formatTime(time)}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="estimatedHours">Estimated Hours</label>
+      <p-inputNumber id="estimatedHours" [(ngModel)]="newTask.estimatedHours" [min]="1" [max]="24" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+    </div>
+    <div class="field">
+      <label for="priority">Priority</label>
+      <select id="priority" [(ngModel)]="newTask.priority" class="p-inputtext">
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" icon="pi pi-times" (click)="showAddTaskDialog = false" class="p-button-text"></button>
+    <button pButton label="Add Task" icon="pi pi-check" (click)="addTask()"></button>
+  </ng-template>
+</p-dialog> 
