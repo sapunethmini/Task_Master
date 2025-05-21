@@ -1,0 +1,58 @@
+<div class="container">
+    <h1 class="dashboard-title">Team Performance Dashboard</h1>
+    
+    <div class="team-grid">
+      <div *ngFor="let team of teams" class="team-card" (click)="viewTeamMembers(team)">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="card-header">
+              <h2>{{team.name}}</h2>
+            </div>
+          </ng-template>
+          
+          <div class="card-content">
+            <div class="progress-wrapper">
+              <div class="progress-container">
+                <div class="progress-background"></div>
+                <div class="progress-value" [ngStyle]="{
+                  'width': team.progress + '%',
+                  'background-color': team.color
+                }"></div>
+              </div>
+            </div>
+            
+            <div class="percentage">
+              <span>{{team.progress}}%</span>
+            </div>
+            
+            <div class="metrics">
+              <div class="metric-item">
+                <span>Tasks Completed: {{team.tasksCompleted}}/{{team.totalTasks}}</span>
+              </div>
+              <div class="metric-item">
+                <span>Team Members: {{team.members}}</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-label">Legend:</div>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #4CAF50;"></div>
+          <span>80-100%</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #FFC107;"></div>
+          <span>60-79%</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #FF5722;"></div>
+          <span>0-59%</span>
+        </div>
+      </div>
+    </div>
+</div>
