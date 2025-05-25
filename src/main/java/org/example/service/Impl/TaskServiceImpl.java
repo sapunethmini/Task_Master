@@ -76,17 +76,44 @@ public class TaskServiceImpl implements TaskService {
 
     // Update entity from DTO
     private void updateEntityFromDto(TaskRequestDto dto, TaskEntity task) {
-        if (dto.getTitle() != null) task.setTitle(dto.getTitle());
-        if (dto.getDescription() != null) task.setDescription(dto.getDescription());
-        if (dto.getStatus() != null) task.setStatus(dto.getStatus());
-        if (dto.getCategory() != null) task.setCategory(dto.getCategory());
-        if (dto.getPriority() != null) task.setPriority(dto.getPriority());
-        if (dto.getUserId() != null) task.setUserId(dto.getUserId());
-        if (dto.getTeam() != null) task.setTeam(dto.getTeam());
-        if (dto.getDuration() != null) task.setDuration(dto.getDuration());
-        if (dto.getDueDate() != null) task.setDueDate(dto.getDueDate());
+        // Log the incoming DTO for debugging
+        System.out.println("Updating task with DTO: " + dto);
+        
+        // Update all fields from DTO
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setStatus(dto.getStatus());
+        task.setCategory(dto.getCategory());
+        task.setPriority(dto.getPriority());
+        task.setTeam(dto.getTeam());
+        task.setDuration(dto.getDuration());
+        task.setDueDate(dto.getDueDate());
+        
+        // Don't update userId if it's null in the request
+        if (dto.getUserId() != null) {
+            task.setUserId(dto.getUserId());
+        }
+        
+        // Log the updated task for debugging
+        System.out.println("Updated task entity: " + task);
     }
 
+    private TaskResponseDto convertToResponseDto(TaskEntity entity) {
+        TaskResponseDto dto = new TaskResponseDto();
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setDescription(entity.getDescription());
+        dto.setStatus(entity.getStatus());
+        dto.setCategory(entity.getCategory());
+        dto.setTeam(entity.getTeam());
+        dto.setPriority(entity.getPriority());
+        dto.setUserId(entity.getUserId());
+        dto.setDueDate(entity.getDueDate());
+        dto.setDuration(entity.getDuration());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        return dto;
+    }
     @Override
     public TaskResponseDto createTask(TaskRequestDto taskDto) {
         TaskEntity task = convertToEntity(taskDto);
@@ -110,11 +137,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponseDto updateTask(Long id, TaskRequestDto taskDto) {
+        System.out.println("Updating task with ID: " + id);
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
 
+        System.out.println("Found existing task: " + task);
         updateEntityFromDto(taskDto, task);
         TaskEntity updatedTask = taskRepository.save(task);
+        System.out.println("Saved updated task: " + updatedTask);
 
         return convertToDto(updatedTask);
     }
@@ -272,9 +302,41 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.countByTeamAndPriority(team, priority); // Correct parameter order
     }
 
+
+    @Override
+    public Long getTaskCountByTeamAndStatus(String team, String status) {
+        System.out.println("Service: Counting tasks for team: " + team + ", status: " + status);
+        Long count = taskRepository.countByTeamAndStatus(team, status);
+        System.out.println("Service: Found count: " + count);
+        return count;
+    }
+
+    @Override
+    public Long getTaskCountByUserAndStatus(Long userId, String status) {
+        return taskRepository.countByUserIdAndStatus(userId, status);
+    }
+
+
+
+
+    @Override
+    public List<TaskResponseDto> getTasksByTeamAndStatus(String team, String status) {
+        List<TaskEntity> tasks = taskRepository.findByTeamAndStatus(team, status);
+        return tasks.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<TaskResponseDto> getTasksByTeamAndPriority(String team, Priority priority) {
         return taskRepository.findByTeamAndPriority(team, priority).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskResponseDto> getTasksByTeam(String team) {
+        return taskRepository.findByTeam(team).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }

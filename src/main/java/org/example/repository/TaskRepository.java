@@ -32,5 +32,16 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     Long countByTeam(String team);
     Long countByTeamAndPriority(String team, Priority priority);
 
+
     List<TaskEntity> findByTeamAndPriority(String team, Priority priority);
+
+    List<TaskEntity> findByTeam(String team);
+
+
+    // New method for counting tasks by team and status
+    Long countByTeamAndStatus(String team, String status);
+    Long countByUserIdAndStatus(Long userId, String status);
+
+    // New method for finding tasks by team and status
+    List<TaskEntity> findByTeamAndStatus(String team, String status);
 }

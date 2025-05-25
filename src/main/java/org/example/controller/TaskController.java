@@ -169,9 +169,10 @@ public class TaskController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/team/{team}/count")
-    public ResponseEntity<Long> getTaskCountByTeam(@PathVariable String team) {
-        Long count = taskService.getTaskCountByTeam(team);
+
+    @GetMapping("/team/{departmentId}/count")
+    public ResponseEntity<Long> getTaskCountByTeam(@PathVariable String departmentId) {
+        Long count = taskService.getTaskCountByTeam(departmentId);
         return ResponseEntity.ok(count);
     }
 
@@ -182,6 +183,8 @@ public class TaskController {
         Long count = taskService.getTotalTaskCount();
         return ResponseEntity.ok(count);
     }
+
+
 
     @GetMapping("/team/{team}/priority/{priority}/count")
     public ResponseEntity<Long> getTaskCountByTeamAndPriority(
@@ -196,8 +199,6 @@ public class TaskController {
         }
     }
 
-
-
     @GetMapping("/getAllTasks/team/{team}/priority/{priority}")
     public ResponseEntity<List<TaskResponseDto>> getTasksByTeamAndPriority(
             @PathVariable String team,
@@ -210,4 +211,57 @@ public class TaskController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/getAllTasks/team/{team}")
+    public ResponseEntity<List<TaskResponseDto>> getTasksByTeam(
+            @PathVariable String team) {
+        try {
+            List<TaskResponseDto> tasks = taskService.getTasksByTeam(team);
+            return ResponseEntity.ok(tasks);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
+
+    @GetMapping("/getAllTasks/team/{team}/status/{status}")
+    public ResponseEntity<List<TaskResponseDto>> getTasksByTeamAndStatus(
+            @PathVariable String team,
+            @PathVariable String status) {
+        List<TaskResponseDto> tasks = taskService.getTasksByTeamAndStatus(team, status);
+        return ResponseEntity.ok(tasks);
+    }
+
+
+    // Add these specific endpoints to your TaskController class
+// Make sure to place them BEFORE any generic endpoints to avoid conflicts
+
+    @GetMapping("/team/{team}/status/{status}/count")     // Most specific first
+    public ResponseEntity<Long> getTaskCountByTeamAndStatus(
+            @PathVariable String team,
+            @PathVariable String status) {
+        try {
+            System.out.println("Received request for team: " + team + ", status: " + status);
+            Long count = taskService.getTaskCountByTeamAndStatus(team, status);
+            System.out.println("Count result: " + count);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            System.err.println("Error in getTaskCountByTeamAndStatus: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+    @GetMapping("/User/{userId}/status/{status}/count")
+    public ResponseEntity<Long> getTaskCountByUserAndStatus(
+            @PathVariable Long userId,  // Match type!
+            @PathVariable String status) {
+        Long count = taskService.getTaskCountByUserAndStatus(userId, status);
+        return ResponseEntity.ok(count);
+    }
+
+
 }

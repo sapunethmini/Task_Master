@@ -43,7 +43,16 @@ public interface TaskService {
     Long getTotalTaskCount();
 
     Long getTaskCountByTeamAndPriority(String team, Priority priority);
-
     List<TaskResponseDto> getTasksByTeamAndPriority(String team, Priority priority);
+    List<TaskResponseDto> getTasksByTeam(String team);
+
+
+    // New method for counting tasks by team and status
+    Long getTaskCountByTeamAndStatus(String team, String status);
+    Long getTaskCountByUserAndStatus(Long userId, String status);
+
+
+    // New method for getting tasks by team and status
+    List<TaskResponseDto> getTasksByTeamAndStatus(String team, String status);
 
 }
