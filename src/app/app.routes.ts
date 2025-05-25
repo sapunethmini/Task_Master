@@ -20,6 +20,7 @@ import { EmployeeProgressComponent } from './components/employee/progress/employ
 import { TaskCreationFormComponent } from './components/admin/task-creation-form/task-creation-form.component';
 import { TeamOverviewComponent } from './components/admin/team-overview/team-overview.component';
 import { TaskListComponent } from './components/admin/task-list/task-list.component';
+import {EmployeeTasksListComponent} from './components/employee/tasks-emp/emp-tasks.component';
 
 export const routes: Routes = [
   { path: 'signup', component: UserSignupComponent },
@@ -70,7 +71,7 @@ export const routes: Routes = [
         data: { role: 'admin' }
       },
       {
-        path: 'reports',
+        path: 'report',
         component: ReportComponent,
         canActivate: [RoleGuard],
         data: { role: 'admin' }
@@ -94,7 +95,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: EmployeeDashboardComponent, canActivate: [RoleGuard], data: { role: 'employee' } },
       { path: 'tasks', component: EmployeeTasksComponent, canActivate: [RoleGuard], data: { role: 'employee' } },
       { path: 'progress', component: EmployeeProgressComponent, canActivate: [RoleGuard], data: { role: 'employee' } },
-      { path: 'profile', component: UserProfileComponent, canActivate: [RoleGuard], data: { role: 'employee' } }
+      { path: 'profile', component: UserProfileComponent, canActivate: [RoleGuard], data: { role: 'employee' } },
+      {path: 'tasks-emp', component: EmployeeTasksListComponent, canActivate: [RoleGuard], data: { role: 'employee' } },
     ]
   },
   

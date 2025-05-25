@@ -2,6 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TabViewModule } from 'primeng/tabview';
+import { TableModule } from 'primeng/table';
+import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
+import { ChartModule } from 'primeng/chart';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { ToastModule } from 'primeng/toast';
+import { FormsModule } from '@angular/forms';
 
 interface MenuItem {
   label: string;
@@ -14,7 +27,23 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    ButtonModule,
+    CardModule,
+    TabViewModule,
+    TableModule,
+    DropdownModule,
+    CalendarModule,
+    ChartModule,
+    MultiSelectModule,
+    DialogModule,
+    InputTextModule,
+    InputNumberModule,
+    ToastModule,
+    FormsModule
+  ],
   templateUrl: './sidebar-admin.component.html',
   styleUrls: ['./sidebar-admin.component.css']
 })
@@ -63,8 +92,8 @@ export class SidebarAdminComponent implements OnInit {
       { 
         label: 'Reports', 
         icon: 'pi pi-chart-bar', 
-        route: '/admin/reports', 
-        active: this.isRouteActive('/admin/reports'),
+        route: '/admin/report', 
+        active: this.isRouteActive('/admin/report'),
         color: '#F59E0B'
       }
     ];

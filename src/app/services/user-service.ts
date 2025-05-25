@@ -107,17 +107,27 @@ private decodeAndSetUserFromToken(token: string): void {
     return throwError(() => error);
   }
 
- getTeamMemberCount(departmentId: string): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/emp-controller/count?departmentId=${departmentId}`)
-      .pipe(catchError(this.handleError));
+  getAllDepartments(departmentId: string): Observable<any[]> {
+    const url = `${this.apiUrl}/emp-controller/getAllByDepartment/${departmentId}`;
+    console.log('Requesting employees from:', url);
+    
+    return this.http.get<any[]>(url)
+      .pipe(
+        tap(employees => console.log(`Found ${employees?.length || 0} employees for department ${departmentId}`)),
+        catchError(this.handleError)
+      );
   }
 
-  getAllDepartments(departmentId: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/emp-controller/getAllByDepartment/${departmentId}`)
-    .pipe(
-      map((response: any) => response.data),
-      catchError(this.handleError)
-    );
-}
+  // ALTERNATIVE: Using the /count endpoint with query parameter
+  getMembersCountByQuery(departmentId: string): Observable<number> {
+    const url = `${this.apiUrl}/emp-controller/count?departmentId=${departmentId}`;
+    console.log('Requesting member count via query from:', url);
+    
+    return this.http.get<number>(url)
+      .pipe(
+        tap(count => console.log(`Department ${departmentId} has ${count} members (via query)`)),
+        catchError(this.handleError)
+      );
+  }
 
 }

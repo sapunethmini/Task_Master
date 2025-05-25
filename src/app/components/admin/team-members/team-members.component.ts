@@ -41,12 +41,28 @@ export class TeamMembersComponent implements OnInit {
   errorMessage: string = '';
   selectedTeam: string = '';
   pageTitle: string = 'Team Members';
+  memberCount: number = 0;
   ref: DynamicDialogRef | undefined;
+
+  // Team mapping for display names
+  teamNames: { [key: string]: string } = {
+    '001': 'Development Team',
+    '002': 'Marketing Team',
+    '003': 'Sales Team',
+    '004': 'Operation Team',
+    '005': 'Design Team',
+    '006': 'HR Team'
+  };
 
   roles: { [key: string]: string } = {
     '11': 'Manager',
-    '21': 'Team Lead',
-    '31': 'Developer',
+    '12': 'Senior Manager',
+    '13': 'Team Lead',
+    '14': 'Senior Team Lead',
+    '15': 'Director',
+    '16': 'Senior Director',
+    '21': 'Developer',
+    '31': 'Senior Developer',
     '41': 'Designer',
     '51': 'Analyst'
   };
@@ -61,46 +77,123 @@ export class TeamMembersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Get route parameters
     this.route.queryParams.subscribe(params => {
+      console.log('Team Members Component - Route params:', params);
+      
       if (params['departmentId']) {
         this.selectedTeam = params['departmentId'];
-        this.pageTitle = params['title'] || 'Team Members';
+        this.pageTitle = params['title'] || this.teamNames[params['departmentId']] || 'Team Members';
+        console.log(`Loading team members for: ${this.pageTitle} (ID: ${this.selectedTeam})`);
+      } else {
+        console.warn('No departmentId provided in route parameters');
+        this.pageTitle = 'All Team Members';
       }
     });
+    
     this.loadEmployees();
   }
 
   loadEmployees(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    console.log(`Loading employees for department: ${this.selectedTeam}`);
 
+    if (!this.selectedTeam) {
+      // If no specific team, load all employees
+      console.log('No specific team selected, loading all employees');
+      this.loadAllEmployees();
+      return;
+    }
+
+    // Load employees for specific department using the dedicated endpoint
+    this.employeeService.getEmployeesByDepartment(this.selectedTeam).subscribe({
+      next: (data) => {
+        console.log(`Successfully loaded ${data.length} employees for department ${this.selectedTeam}:`, data);
+        
+        this.employees = data;
+        this.filteredEmployees = [...this.employees];
+        this.memberCount = this.employees.length;
+        this.isLoading = false;
+        
+        // Show success message
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Team Loaded',
+          detail: `Found ${this.memberCount} members in ${this.pageTitle}`,
+          life: 3000
+        });
+
+        // If no employees found for this department
+        if (this.employees.length === 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'No Members',
+            detail: `${this.pageTitle} currently has no members assigned`,
+            life: 5000
+          });
+        }
+      },
+      error: (error) => {
+        console.error(`Error fetching employees for department ${this.selectedTeam}:`, error);
+        this.errorMessage = `Failed to load team members for ${this.pageTitle}. Please try again later.`;
+        this.isLoading = false;
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Loading Failed',
+          detail: this.errorMessage,
+          life: 5000
+        });
+      }
+    });
+  }
+
+  // Fallback method to load all employees (if no department specified)
+  private loadAllEmployees(): void {
+    console.log('Loading all employees as fallback');
+    
     this.employeeService.getEmployees().subscribe({
       next: (data) => {
+        console.log(`Loaded ${data.length} total employees`);
         this.employees = data;
-        this.filteredEmployees = this.selectedTeam
-          ? this.employees.filter(emp => emp.department_Id === this.selectedTeam)
-          : [...this.employees];
+        this.filteredEmployees = [...this.employees];
+        this.memberCount = this.employees.length;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error fetching employees:', error);
+        console.error('Error fetching all employees:', error);
         this.errorMessage = 'Failed to load employees. Please try again later.';
         this.isLoading = false;
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Loading Failed',
+          detail: this.errorMessage,
+          life: 5000
+        });
       }
     });
   }
 
   filterEmployees(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredEmployees = [...this.employees];
+      return;
+    }
+
     const term = this.searchTerm.trim().toLowerCase();
+    console.log(`Filtering employees by ${this.searchType}: "${term}"`);
+    
     this.filteredEmployees = this.employees.filter(employee => {
       const matchesSearch = this.searchType === 'id'
-        ? employee.id?.toString() === this.searchTerm
+        ? employee.id?.toString() === this.searchTerm.trim()
         : (`${employee.firstname} ${employee.lastname}`).toLowerCase().includes(term);
-
-      return this.selectedTeam
-        ? matchesSearch && employee.department_Id === this.selectedTeam
-        : matchesSearch;
+      
+      return matchesSearch;
     });
+
+    console.log(`Filter results: ${this.filteredEmployees.length} employees found`);
   }
 
   onSearchChange(): void {
@@ -108,9 +201,16 @@ export class TeamMembersComponent implements OnInit {
   }
 
   setSearchType(type: 'name' | 'id'): void {
+    console.log(`Changing search type to: ${type}`);
     this.searchType = type;
     this.searchTerm = '';
-    this.filterEmployees();
+    this.filteredEmployees = [...this.employees]; // Reset filter
+  }
+
+  clearSearch(): void {
+    console.log('Clearing search');
+    this.searchTerm = '';
+    this.filteredEmployees = [...this.employees];
   }
 
   getFullName(employee: Employee): string {
@@ -125,52 +225,82 @@ export class TeamMembersComponent implements OnInit {
     return `${employee.firstname?.[0] || ''}${employee.lastname?.[0] || ''}`;
   }
 
+  // Navigate back to team management
+  navigateBack(): void {
+    console.log('Navigating back to team management');
+    this.router.navigate(['/admin/team-management']);
+  }
+
   openTaskCreationForm(employee: Employee): void {
+    console.log(`Opening task creation form for employee: ${this.getFullName(employee)}`);
+    
     this.ref = this.dialogService.open(TaskCreationFormComponent, {
-      width: '30%',
+      width: '40%',
+      height: '80%',
       contentStyle: { overflow: 'auto' },
-      baseZIndex: -1,
+      baseZIndex: 1000,
       data: {
         employee: employee,
-        teamId: this.selectedTeam
+        teamId: this.selectedTeam,
+        teamName: this.pageTitle
       }
     });
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        console.log('Task creation completed successfully');
         this.messageService.add({
           severity: 'success',
           summary: 'Task Created',
-          detail: 'Task has been created successfully'
+          detail: `Task has been assigned to ${this.getFullName(employee)}`,
+          life: 4000
         });
       }
     });
   }
 
-  // navigateToAddEmployee(): void {
-  //   this.router.navigate(['/admin/emplist'], {
-  //     queryParams: {
-  //       departmentId: this.selectedTeam,
-  //       title: this.pageTitle
-  //     }
-  //   });
-  // }
- navigateToAddEmployee(): void {
-    this.router.navigate(['/admin/empadd']);
+  navigateToAddEmployee(): void {
+    console.log('Navigating to add employee form');
+    this.router.navigate(['/admin/empadd'], {
+      queryParams: {
+        departmentId: this.selectedTeam,
+        returnTo: '/admin/team-members'
+      }
+    });
   }
+
+  // Navigate to employee details/edit
+  viewEmployeeDetails(employee: Employee): void {
+    console.log(`Viewing details for employee: ${this.getFullName(employee)}`);
+    this.router.navigate(['/admin/empupdate'], { 
+      queryParams: { 
+        id: employee.id,
+        returnTo: `/admin/team-members?departmentId=${this.selectedTeam}&title=${encodeURIComponent(this.pageTitle)}`
+      } 
+    });
+  }
+
   confirmDelete(employee: Employee, event: Event): void {
+    console.log(`Confirming deletion of employee: ${this.getFullName(employee)}`);
+    
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: `Are you sure you want to remove ${employee.firstname} ${employee.lastname} from the team?`,
+      message: `Are you sure you want to remove ${employee.firstname} ${employee.lastname} from ${this.pageTitle}?`,
+      header: 'Confirm Removal',
       icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.deleteEmployee(employee);
+      },
+      reject: () => {
+        console.log('Employee deletion cancelled');
       }
     });
   }
 
   deleteEmployee(employee: Employee): void {
     if (!employee.id) {
+      console.error('Cannot delete employee without ID');
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -179,14 +309,22 @@ export class TeamMembersComponent implements OnInit {
       return;
     }
 
+    console.log(`Deleting employee: ${this.getFullName(employee)} (ID: ${employee.id})`);
+
     this.employeeService.deleteEmployee(employee.id).subscribe({
       next: () => {
+        console.log(`Successfully deleted employee: ${this.getFullName(employee)}`);
+        
+        // Remove from both arrays
         this.employees = this.employees.filter(emp => emp.id !== employee.id);
         this.filteredEmployees = this.filteredEmployees.filter(emp => emp.id !== employee.id);
+        this.memberCount = this.employees.length;
+        
         this.messageService.add({
           severity: 'success',
           summary: 'Employee Removed',
-          detail: `${employee.firstname} ${employee.lastname} has been removed from the team`
+          detail: `${employee.firstname} ${employee.lastname} has been removed from ${this.pageTitle}`,
+          life: 4000
         });
       },
       error: (error) => {
@@ -194,13 +332,30 @@ export class TeamMembersComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Remove Failed',
-          detail: 'There was a problem removing the employee. Please try again.'
+          detail: 'There was a problem removing the employee. Please try again.',
+          life: 5000
         });
       }
     });
   }
 
   refreshList(): void {
+    console.log('Refreshing team members list');
     this.loadEmployees();
+  }
+
+  // Check if there are no employees in this team
+  hasNoEmployees(): boolean {
+    return !this.isLoading && this.employees.length === 0 && !this.errorMessage;
+  }
+
+  // Check if search returned no results
+  hasNoSearchResults(): boolean {
+    return !this.isLoading && this.employees.length > 0 && this.filteredEmployees.length === 0 && this.searchTerm.trim().length > 0;
+  }
+
+  // Get team display name
+  getTeamDisplayName(): string {
+    return this.teamNames[this.selectedTeam] || this.pageTitle || 'Team';
   }
 }

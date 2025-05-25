@@ -1,12 +1,14 @@
 <div class="container">
-    <h1 class="dashboard-title">Team Performance Dashboard</h1>
     
     <div class="team-grid">
       <div *ngFor="let team of teams" class="team-card" (click)="viewTeamMembers(team)">
         <p-card>
           <ng-template pTemplate="header">
-            <div class="card-header">
-              <h2>{{team.name}}</h2>
+            <div class="card-header" [ngStyle]="{
+              'background-color': getLightColor(team.color),
+              'border-bottom': '1px solid ' + team.color
+            }">
+              <h2 [ngStyle]="{'color': team.color}">{{team.name}}</h2>
             </div>
           </ng-template>
           
@@ -27,10 +29,20 @@
             
             <div class="metrics">
               <div class="metric-item">
-                <span>Tasks Completed: {{team.tasksCompleted}}/{{team.totalTasks}}</span>
+                <span class="metric-label">Total Tasks:</span>
+                <span class="metric-value">{{team.totalTasks}}</span>
               </div>
               <div class="metric-item">
-                <span>Team Members: {{team.members}}</span>
+                <span class="metric-label">Completed:</span>
+                <span class="metric-value completed">{{team.tasksCompleted}}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">In Progress:</span>
+                <span class="metric-value in-progress">{{team.totalTasks - team.tasksCompleted}}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Team Members:</span>
+                <span class="metric-value">{{team.members}}</span>
               </div>
             </div>
           </div>
@@ -38,7 +50,7 @@
       </div>
     </div>
     
-    <div class="legend">
+    <!-- <div class="legend">
       <div class="legend-label">Legend:</div>
       <div class="legend-items">
         <div class="legend-item">
@@ -54,5 +66,5 @@
           <span>0-59%</span>
         </div>
       </div>
-    </div>
+    </div> -->
 </div>

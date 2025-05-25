@@ -10,7 +10,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { EmployeeService, Employee } from '../../../services/employee-service'; // Ensure the path is correct
+import { EmployeeService, Employee } from '../../../services/employee-service';
 
 @Component({
   selector: 'app-emp-list',
@@ -39,21 +39,27 @@ export class EmpListComponent implements OnInit {
   errorMessage: string = '';
   selectedTeam: string = '';
   pageTitle: string = 'All Employees';
+  memberCount: number = 0;
   
   Teams: { [key: string]: string } = {
     '001': 'Human Resources',
-    '002': 'Engineering',
-    '003': 'Marketing',
-    '004': 'Finance',
-    '005': 'Sales'
+    '002': 'Development Team',
+    '003': 'Marketing Team',
+    '004': 'Sales Team',
+    '005': 'Operation Team',
+    '006': 'Design Team',
+    '007': 'HR Team'
   };
   
   roles: { [key: string]: string } = {
     '11': 'Manager',
-    '21': 'Team Lead',
-    '31': 'Developer',
-    '41': 'Designer',
-    '51': 'Analyst'
+    '12': 'Senior Manager',
+    '13': 'Team Lead',
+    '14': 'Senior Team Lead',
+    '15': 'Director',
+    '16': 'Senior Director',
+    '21': 'Developer',
+    '31': 'Senior Developer'
   };
 
   constructor(
@@ -65,11 +71,17 @@ export class EmpListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Get query parameters
+    // Get query parameters from the URL
     this.route.queryParams.subscribe(params => {
+      console.log('Route parameters:', params);
+      
       if (params['departmentId']) {
         this.selectedTeam = params['departmentId'];
-        this.pageTitle = params['title'] || 'Team Members';
+        this.pageTitle = params['title'] || this.Teams[params['departmentId']] || 'Team Members';
+        console.log(`Loading employees for department: ${this.selectedTeam}`);
+      } else {
+        this.pageTitle = 'All Employees';
+        console.log('Loading all employees');
       }
     });
     
@@ -80,38 +92,74 @@ export class EmpListComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.employeeService.getEmployees()
-      .subscribe({
-        next: (data) => {
-          this.employees = data;
-          // Filter by team if selected
-          if (this.selectedTeam) {
-            this.filteredEmployees = this.employees.filter(emp => 
-              emp.department_Id === this.selectedTeam
-            );
-          } else {
+    if (this.selectedTeam) {
+      // Load employees for specific department
+      console.log(`Fetching employees for department: ${this.selectedTeam}`);
+      
+      this.employeeService.getEmployeesByDepartment(this.selectedTeam)
+        .subscribe({
+          next: (data) => {
+            console.log('Received department employees:', data);
+            this.employees = data;
             this.filteredEmployees = [...this.employees];
+            this.memberCount = this.employees.length;
+            this.isLoading = false;
+            
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `Loaded ${this.memberCount} employees from ${this.pageTitle}`
+            });
+          },
+          error: (error) => {
+            console.error('Error fetching department employees:', error);
+            this.errorMessage = `Failed to load employees for ${this.pageTitle}. Please try again later.`;
+            this.isLoading = false;
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: this.errorMessage
+            });
           }
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error fetching employees:', error);
-          this.errorMessage = 'Failed to load employees. Please try again later.';
-          this.isLoading = false;
-        }
-      });
+        });
+    } else {
+      // Load all employees
+      console.log('Fetching all employees');
+      
+      this.employeeService.getEmployees()
+        .subscribe({
+          next: (data) => {
+            console.log('Received all employees:', data);
+            this.employees = data;
+            this.filteredEmployees = [...this.employees];
+            this.memberCount = this.employees.length;
+            this.isLoading = false;
+            
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `Loaded ${this.memberCount} employees`
+            });
+          },
+          error: (error) => {
+            console.error('Error fetching all employees:', error);
+            this.errorMessage = 'Failed to load employees. Please try again later.';
+            this.isLoading = false;
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: this.errorMessage
+            });
+          }
+        });
+    }
   }
 
   filterEmployees(): void {
     if (!this.searchTerm.trim()) {
-      // If there's a selected team, filter by team first
-      if (this.selectedTeam) {
-        this.filteredEmployees = this.employees.filter(emp => 
-          emp.department_Id === this.selectedTeam
-        );
-      } else {
-        this.filteredEmployees = [...this.employees];
-      }
+      this.filteredEmployees = [...this.employees];
       return;
     }
 
@@ -120,10 +168,7 @@ export class EmpListComponent implements OnInit {
         ? employee.id?.toString() === this.searchTerm
         : `${employee.firstname} ${employee.lastname}`.toLowerCase().includes(this.searchTerm.toLowerCase());
       
-      // If there's a selected team, also filter by team
-      return this.selectedTeam 
-        ? matchesSearch && employee.department_Id === this.selectedTeam
-        : matchesSearch;
+      return matchesSearch;
     });
   }
 
@@ -142,7 +187,7 @@ export class EmpListComponent implements OnInit {
   }
 
   getTeamName(departmentId: string): string {
-    return departmentId || 'Unknown Team';
+    return this.Teams[departmentId] || departmentId || 'Unknown Team';
   }
 
   getRoleName(roleId: string): string {
@@ -159,6 +204,11 @@ export class EmpListComponent implements OnInit {
 
   navigateToAddEmployee(): void {
     this.router.navigate(['/admin/empadd']);
+  }
+
+  // Navigate back to user management
+  navigateBack(): void {
+    this.router.navigate(['/admin/usermanagement']);
   }
 
   confirmDelete(employee: Employee, event: Event): void {
@@ -188,6 +238,7 @@ export class EmpListComponent implements OnInit {
           // Remove the employee from both arrays
           this.employees = this.employees.filter(emp => emp.id !== employee.id);
           this.filteredEmployees = this.filteredEmployees.filter(emp => emp.id !== employee.id);
+          this.memberCount = this.employees.length;
           
           this.messageService.add({
             severity: 'success',
@@ -208,5 +259,11 @@ export class EmpListComponent implements OnInit {
 
   refreshList(): void {
     this.loadEmployees();
+  }
+
+  // Clear filters and show all results for current view
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filteredEmployees = [...this.employees];
   }
 }

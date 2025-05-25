@@ -1,11 +1,10 @@
-
 <div class="profile-container">
   <!-- User Profile Card -->
   <div class="profile-card">
     <div class="profile-header">
       <img [src]="user.avatar" alt="Profile Picture" class="profile-avatar">
       <div class="profile-info">
-        <h1>{{user.name}}</h1>
+        <h1 class="hname">{{user.name}}</h1>
         <p class="role">{{user.role}}</p>
         <p class="department">{{user.department}}</p>
       </div>
@@ -19,32 +18,129 @@
         <i class="pi pi-phone"></i>
         <span>{{user.phone}}</span>
       </div>
+      <div class="detail-item">
+        <i class="pi pi-map-marker"></i>
+        <span>{{user.location || 'New York, USA'}}</span>
+      </div>
+      <div class="detail-item">
+        <i class="pi pi-calendar"></i>
+        <span>Joined {{user.joinDate || 'Jan 2023'}}</span>
+      </div>
     </div>
   </div>
 
+  <!-- Analytics Section -->
+  <!-- <div class="analytics-section">
+    <div class="chart-container">
+      <div class="chart-header">
+        <h4>Task Completion Trends</h4>
+        <span class="chart-period">Last 7 Days</span>
+      </div>
+      <div style="height: 300px;">
+        <p-chart type="line" [data]="chartData" [options]="chartOptions" width="100%" height="300px"></p-chart>
+      </div>
+    </div>
+    
+    <div class="productivity-metrics">
+      <div class="chart-header">
+        <h4>Productivity Metrics</h4>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Avg. Tasks/Day</span>
+        <div>
+          <span class="metric-value">{{avgTasksPerDay || '3.2'}}</span>
+          <span class="metric-trend trend-up">+12%</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">On-Time Delivery</span>
+        <div>
+          <span class="metric-value">{{onTimeDelivery || '94%'}}</span>
+          <span class="metric-trend trend-up">+5%</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Efficiency Score</span>
+        <div>
+          <span class="metric-value">{{efficiencyScore || '8.7/10'}}</span>
+          <span class="metric-trend trend-up">+0.3</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Focus Time</span>
+        <div>
+          <span class="metric-value">{{focusTime || '6.2h'}}</span>
+          <span class="metric-trend trend-down">-0.5h</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Task Quality</span>
+        <div>
+          <span class="metric-value">{{taskQuality || '9.1/10'}}</span>
+          <span class="metric-trend trend-up">+0.2</span>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
   <!-- Task Overview Card -->
   <div class="task-overview-card">
-    <div class="task-header">
-      <h2>Task Overview</h2>
-      <button pButton label="Add New Task" icon="pi pi-plus" (click)="showAddTaskDialog = true"></button>
+    <div class="card-header">
+      <h3>Task Overview Dashboard</h3>
+      <div style="display: flex; gap: 1rem;">
+        <button pButton type="button" label="Add Task" icon="pi pi-plus" (click)="showAddTaskDialog = true" class="p-button-sm"></button>
+        <button pButton type="button" label="Export" icon="pi pi-download" class="p-button-sm p-button-outlined"></button>
+      </div>
     </div>
     <div class="task-stats">
       <div class="stat-item">
-        <span class="stat-value">{{tasks.length}}</span>
+        <span class="stat-value">{{ totalTasks }}</span>
         <span class="stat-label">Total Tasks</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">{{completedTasks.length}}</span>
+        <span class="stat-value">{{ completedTasks }}</span>
         <span class="stat-label">Completed</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">{{pendingTasks.length}}</span>
+        <span class="stat-value">{{ pendingTasks }}</span>
         <span class="stat-label">Pending</span>
       </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ inProgressTasksCount }}</span>
+        <span class="stat-label">In Progress</span>
+      </div>
     </div>
+    
+    <!-- Additional Stats Row -->
+    <div class="task-stats" style="margin-top: 1rem;">
+      <div class="stat-item">
+        <span class="stat-value">{{ overdueTasks || '2' }}</span>
+        <span class="stat-label">Overdue</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ todayTasks || '5' }}</span>
+        <span class="stat-label">Due Today</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ totalHours || '127' }}</span>
+        <span class="stat-label">Total Hours</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ avgCompletion || '2.3' }}</span>
+        <span class="stat-label">Avg Days</span>
+      </div>
+    </div>
+    
     <div class="progress-section">
-      <span class="progress-label">Overall Progress</span>
-      <p-progressBar [value]="completionPercentage"></p-progressBar>
+      <div class="progress-header">
+        <span>Overall Progress</span>
+        <span class="progress-percentage">{{ completionPercentage | number:'1.0-0' }}%</span>
+      </div>
+      <p-progressBar 
+        [value]="completionPercentage" 
+        [showValue]="false"
+        [style]="{'height': '12px'}">
+      </p-progressBar>
     </div>
   </div>
 
@@ -52,9 +148,9 @@
   <div class="task-lists">
     <!-- Pending Tasks -->
     <div class="task-list">
-      <h3>Pending Tasks</h3>
+      <h3>Pending Tasks ({{pendingTasks}})</h3>
       <div class="task-cards">
-        <div *ngFor="let task of pendingTasks" class="task-card">
+        <div *ngFor="let task of pendingTasksList" class="task-card">
           <div class="task-card-header">
             <h4>{{task.title}}</h4>
             <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
@@ -65,11 +161,11 @@
           <div class="task-details">
             <div class="task-time">
               <i class="pi pi-clock"></i>
-              <span>{{formatTime(task.dueTime)}}</span>
+              <span>{{task.dueTime ? formatTime(task.dueTime) : 'No time set'}}</span>
             </div>
             <div class="task-hours">
               <i class="pi pi-hourglass"></i>
-              <span>{{task.estimatedHours}} hours</span>
+              <span>{{task.estimatedHours || 0}} hours</span>
             </div>
           </div>
           <div class="task-footer">
@@ -82,14 +178,21 @@
             </span>
           </div>
         </div>
+        
+        <!-- Empty State -->
+        <div *ngIf="hasNoPendingTasks" class="task-card" style="text-align: center; padding: 2rem;">
+          <i class="pi pi-check-circle" style="font-size: 3rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
+          <h4 style="color: #a0aec0; margin-bottom: 0.5rem;">No Pending Tasks</h4>
+          <p style="color: #cbd5e0; margin: 0;">All caught up! Great work.</p>
+        </div>
       </div>
     </div>
 
     <!-- Completed Tasks -->
     <div class="task-list">
-      <h3>Completed Tasks</h3>
+      <h3>Completed Tasks ({{completedTasks}})</h3>
       <div class="task-cards">
-        <div *ngFor="let task of completedTasks" class="task-card completed">
+        <div *ngFor="let task of displayedCompletedTasks; let i = index" class="task-card completed">
           <div class="task-card-header">
             <h4>{{task.title}}</h4>
             <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
@@ -103,9 +206,15 @@
               {{task.dueDate | date:'mediumDate'}}
             </span>
             <span class="status-badge" [style.background-color]="getStatusColor(task.status)">
+              <i class="pi pi-check" style="margin-right: 0.3rem;"></i>
               {{task.status}}
             </span>
           </div>
+        </div>
+        
+        <!-- Show more button for completed tasks -->
+        <div *ngIf="hasMoreThanThreeCompletedTasks" class="task-card" style="text-align: center; padding: 1rem;">
+          <button pButton type="button" label="{{showAllCompleted ? 'Show Less' : 'Show All'}}" icon="pi pi-{{showAllCompleted ? 'chevron-up' : 'chevron-down'}}" class="p-button-sm" (click)="showAllCompleted = !showAllCompleted"></button>
         </div>
       </div>
     </div>
@@ -113,7 +222,7 @@
 </div>
 
 <!-- Add Task Dialog -->
-<p-dialog header="Add New Task" [(visible)]="showAddTaskDialog" [style]="{width: '450px'}" [modal]="true">
+<p-dialog header="Add New Task" [(visible)]="showAddTaskDialog" [style]="{width: '500px'}" [modal]="true">
   <div class="dialog-content">
     <div class="field">
       <label for="title">Task Title</label>
@@ -125,6 +234,84 @@
     </div>
     <div class="field-row">
       <div class="field">
+        <label for="estimatedHours">Estimated Hours</label>
+        <p-inputNumber id="estimatedHours" [(ngModel)]="newTask.estimatedHours" [min]="1" [max]="24" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+      </div>
+      <div class="field">
+        <label for="priority">Priority</label>
+        <select id="priority" [(ngModel)]="newTask.priority" class="p-inputtext">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="category">Category</label>
+      <select id="category" [(ngModel)]="newTask.category" class="p-inputtext">
+        <option value="development">Development</option>
+        <option value="design">Design</option>
+        <option value="testing">Testing</option>
+        <option value="meeting">Meeting</option>
+        <option value="research">Research</option>
+        <option value="documentation">Documentation</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="assignee">Assign To</label>
+      <select id="assignee" [(ngModel)]="newTask.assignee" class="p-inputtext">
+        <option value="self">Myself</option>
+        <option value="team">Team Member</option>
+        <option value="manager">Manager</option>
+      </select>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" icon="pi pi-times" (click)="showAddTaskDialog = false" class="p-button-text"></button>
+    <button pButton label="Save Draft" icon="pi pi-save" (click)="saveDraft()" class="p-button-text"></button>
+    <button pButton label="Add Task" icon="pi pi-check" (click)="addTask()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Task Analytics Dialog -->
+<p-dialog header="Task Analytics" [(visible)]="showAnalyticsDialog" [style]="{width: '800px'}" [modal]="true">
+  <div class="dialog-content">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div class="chart-container" style="box-shadow: none; border: 1px solid #e2e8f0;">
+        <h4 style="margin-bottom: 1rem;">Priority Distribution</h4>
+        <p-chart type="doughnut" [data]="priorityChartData" [options]="doughnutOptions" width="100%" height="200px"></p-chart>
+      </div>
+      <div class="chart-container" style="box-shadow: none; border: 1px solid #e2e8f0;">
+        <h4 style="margin-bottom: 1rem;">Status Overview</h4>
+        <p-chart type="bar" [data]="statusChartData" [options]="barOptions" width="100%" height="200px"></p-chart>
+      </div>
+    </div>
+    <div class="productivity-metrics" style="box-shadow: none; border: 1px solid #e2e8f0;">
+      <h4 style="margin-bottom: 1rem;">Performance Insights</h4>
+      <div class="metric-item">
+        <span class="metric-label">Most Productive Day</span>
+        <span class="metric-value">Tuesday</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Peak Performance Time</span>
+        <span class="metric-value">10:00 AM - 12:00 PM</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Average Task Duration</span>
+        <span class="metric-value">4.2 hours</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Completion Rate</span>
+        <span class="metric-value">87%</span>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Export Report" icon="pi pi-download" (click)="exportAnalytics()" class="p-button-text"></button>
+    <button pButton label="Close" icon="pi pi-times" (click)="showAnalyticsDialog = false"></button>
+  </ng-template>
+</p-dialog>
+      <div class="field">
         <label for="dueDate">Due Date</label>
         <p-calendar id="dueDate" [(ngModel)]="newTask.dueDate" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
       </div>
@@ -134,22 +321,4 @@
           <option *ngFor="let time of timeOptions" [value]="time">{{formatTime(time)}}</option>
         </select>
       </div>
-    </div>
-    <div class="field">
-      <label for="estimatedHours">Estimated Hours</label>
-      <p-inputNumber id="estimatedHours" [(ngModel)]="newTask.estimatedHours" [min]="1" [max]="24" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
-    </div>
-    <div class="field">
-      <label for="priority">Priority</label>
-      <select id="priority" [(ngModel)]="newTask.priority" class="p-inputtext">
-        <option value="high">High</option>
-        <option value="medium">Medium</option>
-        <option value="low">Low</option>
-      </select>
-    </div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton label="Cancel" icon="pi pi-times" (click)="showAddTaskDialog = false" class="p-button-text"></button>
-    <button pButton label="Add Task" icon="pi pi-check" (click)="addTask()"></button>
-  </ng-template>
-</p-dialog> 
+    <div class="field-row">

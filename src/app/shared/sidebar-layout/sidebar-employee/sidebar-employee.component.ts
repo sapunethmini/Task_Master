@@ -27,7 +27,7 @@ export class SidebarEmployeeComponent implements OnInit {
       {
         label: 'Tasks',
         icon: 'pi pi-list',
-        routerLink: '/employee/tasks',
+        routerLink: '/employee/tasks-emp',
         routerLinkActiveOptions: { exact: true }
       },
       // {
