@@ -1,0 +1,15 @@
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\config\KafkaConfig.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\config\WebConfig.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\controller\TestEventController.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\dto\ApiResponse.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\dto\NotificationResponseDto.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\dto\TaskEventDto.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\dto\UserEventDto.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\exception\GlobalExceptionHandler.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\kafka\EventConsumer.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\kafka\EventProducer.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\Main.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\model\Notification.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\repository\NotificationRepository.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\service\EmailService.java
+E:\MY PROJECT\TaskMaster\Notification_Service\src\main\java\org\example\service\NotificationService.java
