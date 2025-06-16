@@ -1,10 +1,9 @@
-# render.yaml - Your complete deployment blueprint
 
 services:
   # --- Database Services ---
 
   # MySQL for the User Service
-  - type: pvt
+  - type: pserv # CORRECTED: Was 'pvt'
     name: mysql-user
     env: docker
     dockerImageURL: mysql:8.0
@@ -20,7 +19,7 @@ services:
         value: employeeSystem
 
   # MySQL for the Task Service
-  - type: pvt
+  - type: pserv # CORRECTED: Was 'pvt'
     name: mysql-task
     env: docker
     dockerImageURL: mysql:8.0
@@ -41,7 +40,7 @@ services:
   - type: web
     name: eureka-server
     env: docker
-    dockerImageURL: sapuninethmini/eureka-service:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/eureka-service:latest
     plan: starter
     ports:
       - port: 8761
@@ -59,7 +58,7 @@ services:
   - type: web
     name: api-gateway
     env: docker
-    dockerImageURL: sapuninethmini/taskmaster-api-getway:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/taskmaster-api-getway:latest
     plan: starter
     ports:
       - port: 8080
@@ -78,7 +77,7 @@ services:
   - type: web
     name: user-service
     env: docker
-    dockerImageURL: sapuninethmini/taskmaster-user-service:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/taskmaster-user-service:latest
     plan: starter
     ports:
       - port: 8082
@@ -98,7 +97,7 @@ services:
         value: "root"
       - key: SPRING_DATASOURCE_PASSWORD
         fromService:
-          type: pvt
+          type: pserv
           name: mysql-user
           envVarKey: MYSQL_ROOT_PASSWORD
 
@@ -106,7 +105,7 @@ services:
   - type: web
     name: task-service
     env: docker
-    dockerImageURL: sapuninethmini/taskmaster-task-service:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/taskmaster-task-service:latest
     plan: starter
     ports:
       - port: 8084
@@ -126,7 +125,7 @@ services:
         value: "root"
       - key: SPRING_DATASOURCE_PASSWORD
         fromService:
-          type: pvt
+          type: pserv
           name: mysql-task
           envVarKey: MYSQL_ROOT_PASSWORD
 
@@ -134,7 +133,7 @@ services:
   - type: web
     name: notification-service
     env: docker
-    dockerImageURL: sapuninethmini/taskmaster-notification-service:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/taskmaster-notification-service:latest
     plan: starter
     ports:
       - port: 8085
@@ -156,7 +155,7 @@ services:
   - type: web
     name: frontend
     env: docker
-    dockerImageURL: sapuninethmini/taskmaster-frontend:latest # ❗️ UPDATE THIS
+    dockerImageURL: sapuninethmini/taskmaster-frontend:latest
     plan: starter
     ports:
       - port: 80 # This is the internal port your Angular Docker image is serving on
