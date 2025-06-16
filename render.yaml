@@ -1,15 +1,19 @@
+
+
 databases:
   - name: mysql-user-db
-    databaseName: employeeSystem
+    databaseName: employee_system     # must be lower-case + underscores
     user: root
     plan: starter
 
   - name: mysql-task-db
-    databaseName: taskdb
+    databaseName: task_db
     user: root
     plan: starter
 
 services:
+
+  # ---------- Service Registry ----------
   - type: web
     name: eureka-server
     runtime: image
@@ -28,6 +32,7 @@ services:
       - key: SERVER_PORT
         value: "8761"
 
+  # ---------- API Gateway ----------
   - type: web
     name: api-gateway
     runtime: image
@@ -42,8 +47,9 @@ services:
       - key: SERVER_PORT
         value: "8080"
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-        value: https://eureka-server.onrender.com:8761/eureka/
+        value: https://eureka-server.onrender.com/eureka/
 
+  # ---------- User Service ----------
   - type: web
     name: user-service
     runtime: image
@@ -58,7 +64,7 @@ services:
       - key: SERVER_PORT
         value: "8082"
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-        value: https://eureka-server.onrender.com:8761/eureka/
+        value: https://eureka-server.onrender.com/eureka/
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: mysql-user-db
@@ -72,6 +78,7 @@ services:
           name: mysql-user-db
           property: password
 
+  # ---------- Task Service ----------
   - type: web
     name: task-service
     runtime: image
@@ -86,7 +93,7 @@ services:
       - key: SERVER_PORT
         value: "8084"
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-        value: https://eureka-server.onrender.com:8761/eureka/
+        value: https://eureka-server.onrender.com/eureka/
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: mysql-task-db
@@ -100,6 +107,7 @@ services:
           name: mysql-task-db
           property: password
 
+  # ---------- Notification Service ----------
   - type: web
     name: notification-service
     runtime: image
@@ -113,23 +121,21 @@ services:
       - key: SERVER_PORT
         value: "8085"
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-        value: https://eureka-server.onrender.com:8761/eureka/
+        value: https://eureka-server.onrender.com/eureka/
       - key: EMAIL_USERNAME
-        value: saragamage111@gmail.com
+        value: saragamage111@gmail.com      # replace with secret in dashboard
       - key: EMAIL_PASSWORD
-        value: Kusum2000
+        value: Kusum2000                    # replace with secret in dashboard
 
+  # ---------- Front-end (Angular) ----------
   - type: web
     name: taskmaster-frontend
-    runtime: image
+    runtime: image                          # stays a Docker image
     image:
       url: docker.io/sapuninethmini/taskmaster-frontend:latest
     plan: starter
     region: oregon
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    healthCheckPath: /                      # simple check for index.html
     envVars:
       - key: API_BASE_URL
         value: https://api-gateway.onrender.com
