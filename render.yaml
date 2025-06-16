@@ -1,0 +1,175 @@
+# render.yaml - Your complete deployment blueprint
+
+services:
+  # --- Database Services ---
+
+  # MySQL for the User Service
+  - type: pvt
+    name: mysql-user
+    env: docker
+    dockerImageURL: mysql:8.0
+    plan: starter # Choose a plan with enough RAM for a DB
+    disks:
+      - name: mysql-user-data
+        mountPath: /var/lib/mysql
+        sizeGB: 1
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true # Render will create a secure password for this
+      - key: MYSQL_DATABASE
+        value: employeeSystem
+
+  # MySQL for the Task Service
+  - type: pvt
+    name: mysql-task
+    env: docker
+    dockerImageURL: mysql:8.0
+    plan: starter
+    disks:
+      - name: mysql-task-data
+        mountPath: /var/lib/mysql
+        sizeGB: 1
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true # Render will create a secure password for this
+      - key: MYSQL_DATABASE
+        value: taskdb
+
+  # --- Backend Services ---
+
+  # Eureka Discovery Server
+  - type: web
+    name: eureka-server
+    env: docker
+    dockerImageURL: sapuninethmini/eureka-service:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 8761
+        protocol: TCP
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - key: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+        value: "false"
+      - key: EUREKA_CLIENT_FETCH_REGISTRY
+        value: "false"
+
+  # API Gateway
+  - type: web
+    name: api-gateway
+    env: docker
+    dockerImageURL: sapuninethmini/taskmaster-api-getway:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 8080
+        protocol: TCP
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        fromService:
+          type: web
+          name: eureka-server
+          property: url
+
+  # User Service
+  - type: web
+    name: user-service
+    env: docker
+    dockerImageURL: sapuninethmini/taskmaster-user-service:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 8082
+        protocol: TCP
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        fromService:
+          type: web
+          name: eureka-server
+          property: url
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:mysql://mysql-user:3306/employeeSystem?autoReconnect=true"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: "root"
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromService:
+          type: pvt
+          name: mysql-user
+          envVarKey: MYSQL_ROOT_PASSWORD
+
+  # Task Service
+  - type: web
+    name: task-service
+    env: docker
+    dockerImageURL: sapuninethmini/taskmaster-task-service:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 8084
+        protocol: TCP
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        fromService:
+          type: web
+          name: eureka-server
+          property: url
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:mysql://mysql-task:3306/taskdb?autoReconnect=true"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: "root"
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromService:
+          type: pvt
+          name: mysql-task
+          envVarKey: MYSQL_ROOT_PASSWORD
+
+  # Notification Service
+  - type: web
+    name: notification-service
+    env: docker
+    dockerImageURL: sapuninethmini/taskmaster-notification-service:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 8085
+        protocol: TCP
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        fromService:
+          type: web
+          name: eureka-server
+          property: url
+      - key: EMAIL_USERNAME
+        value: "saragamage111@gmail.com" # Consider using a secret file for this
+      - key: EMAIL_PASSWORD
+        value: "Kusum2000" # Consider using a secret file for this
+
+  # --- Frontend Service ---
+  - type: web
+    name: frontend
+    env: docker
+    dockerImageURL: sapuninethmini/taskmaster-frontend:latest # ❗️ UPDATE THIS
+    plan: starter
+    ports:
+      - port: 80 # This is the internal port your Angular Docker image is serving on
+        protocol: TCP
+    # This rule is important for Single-Page-Apps like Angular
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # This passes the public URL of your API gateway to your frontend
+      - key: API_URL
+        fromService:
+          type: web
+          name: api-gateway
+          property: url
